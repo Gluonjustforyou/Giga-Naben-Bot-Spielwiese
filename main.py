@@ -8,6 +8,19 @@ intents.presences = False
 
 bot = commands.Bot(command_prefix='!', intents=intents)
 
+
+@bot.command()
+async def hilfe(ctx):
+    embed = discord.Embed(title='Hilfe-Menü',
+                          description='Hier sind einige verfügbare Befehle:',
+                          color=discord.Color.blue())
+    embed.add_field(name='1. !nachricht_mit_reaktion', value='Erstellt eine Nachricht mit einer Reaktion.', inline=False)
+    embed.add_field(name='2. !ban', value='Bannt einen Benutzer.', inline=False)
+    embed.add_field(name='3. !kick', value='Kickt einen Benutzer.', inline=False)
+    embed.add_field(name='4. Hilfe benötigt?', value='Wende dich an das höhere Team oder die Entwickler.', inline=False)
+
+    await ctx.send(embed=embed)
+
 @bot.event
 async def on_ready():
     print(f'Eingeloggt als {bot.user.name} ({bot.user.id})')
