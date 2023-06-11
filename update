@@ -28,7 +28,10 @@ async def hilfe(ctx):
     embed.add_field(name='1. !nachricht_mit_reaktion', value='Erstellt eine Nachricht mit einer Reaktion.', inline=False)
     embed.add_field(name='2. !ban', value='Bannt einen Benutzer.', inline=False)
     embed.add_field(name='3. !kick', value='Kickt einen Benutzer.', inline=False)
-    embed.add_field(name='4. Hilfe benötigt?', value='Wende dich an das höhere Team oder die Entwickler.', inline=False)
+    embed.add_field(name='4. !warn', value='Warnt einen Benutzer', inline=False)
+    embed.add_field(name='5. !remove_last_warn', value='Entfernt den letzten Warn', inline=False)
+    embed.add_field(name='7. !warning_count', value='Zeigt die Anzahl der Warns an', inline=False)
+    embed.add_field(name='8. Hilfe benötigt?', value='Wende dich an das höhere Team oder die Entwickler.', inline=False)
 
     await ctx.send(embed=embed)
 
@@ -101,8 +104,8 @@ async def warn(ctx, member: discord.Member, *, reason: str):
                           color=discord.Color.orange())
     embed.add_field(name='Grund', value=reason)
 
-    warning_count = get_warning_count(member.id)
-    embed.add_field(name='Anzahl der Warnungen', value=warning_count)
+    count = get_warning_count(member.id)
+    embed.add_field(name='Anzahl der Warnungen', value=count)
 
     await ctx.send(embed=embed)
 
@@ -110,6 +113,30 @@ def get_warning_count(user_id):
     cursor.execute('SELECT COUNT(*) FROM warnings WHERE user_id = ?', (user_id,))
     count = cursor.fetchone()[0]
     return count
+
+@bot.command()
+async def remove_last_warn(ctx, member: discord.Member):
+    # Abrufen des neuesten Warnungsdatensatzes des Mitglieds
+    cursor.execute('SELECT id FROM warnings WHERE user_id = ? ORDER BY id DESC LIMIT 1', (member.id,))
+    result = cursor.fetchone()
+
+    if result is None:
+        await ctx.send(f'{member.mention} hat keine Warnungen.')
+        return
+
+    warning_id = result[0]
+
+    # Entfernen des Warnungsdatensatzes
+    cursor.execute('DELETE FROM warnings WHERE id = ?', (warning_id,))
+    connection.commit()
+
+    await ctx.send(f'Die letzte Warnung von {member.mention} wurde entfernt.')
+
+@bot.command()
+async def warning_count(ctx, member: discord.Member):
+    cursor.execute('SELECT COUNT(*) FROM warnings WHERE user_id = ?', (member.id,))
+    warning_count = cursor.fetchone()[0]
+    await ctx.send(f'{member.mention} hat {warning_count} warns.')
 
 bot.run('Token')
 
